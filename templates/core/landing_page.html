@@ -1,0 +1,102 @@
+{% extends 'core/base_public.html' %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<section class="py-5">
+  <div class="row align-items-center">
+    <div class="col-lg-6">
+      <h1 class="display-4 fw-bold mb-4">Financial Risk Intelligence for the Public Sector</h1>
+      <p class="lead mb-4">FinSight helps agencies pinpoint irregular financial activity early with automated risk scoring, collaborative review workflows, and actionable alerts.</p>
+      <div class="d-flex gap-3 flex-wrap">
+        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Sign In</a>
+        <a href="{% url 'register' %}" class="btn btn-outline-primary btn-lg">Request Access</a>
+        <a href="{% url 'demo' %}" class="btn btn-secondary btn-lg">View Demo</a>
+      </div>
+      <div class="mt-4 text-muted">
+        <span class="badge bg-primary-subtle text-primary-emphasis me-2">Data Lineage</span>
+        <span class="badge bg-primary-subtle text-primary-emphasis me-2">AI Insights</span>
+        <span class="badge bg-primary-subtle text-primary-emphasis">Audit Ready</span>
+      </div>
+    </div>
+    <div class="col-lg-6 mt-5 mt-lg-0">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title">Why teams choose FinSight</h5>
+          <ul class="list-unstyled mt-4">
+            <li class="mb-3">
+              <i class="bi bi-lightning-charge text-primary me-2"></i>
+              Automated anomaly detection across ledgers and vendors.
+            </li>
+            <li class="mb-3">
+              <i class="bi bi-people text-primary me-2"></i>
+              Role-based dashboards for administrators, auditors, reviewers, and finance teams.
+            </li>
+            <li class="mb-3">
+              <i class="bi bi-shield-check text-primary me-2"></i>
+              Workflow transparency with case assignments and status tracking.
+            </li>
+            <li>
+              <i class="bi bi-bar-chart text-primary me-2"></i>
+              Clear visualizations and reports for leadership and audit committees.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 border-top">
+  <div class="row text-center">
+    <div class="col-md-3 mb-4">
+      <h2 class="display-6 fw-bold">48%</h2>
+      <p class="text-muted">Reduction in manual review effort</p>
+    </div>
+    <div class="col-md-3 mb-4">
+      <h2 class="display-6 fw-bold">3x</h2>
+      <p class="text-muted">Faster anomaly escalations</p>
+    </div>
+    <div class="col-md-3 mb-4">
+      <h2 class="display-6 fw-bold">99.9%</h2>
+      <p class="text-muted">Audit trail coverage</p>
+    </div>
+    <div class="col-md-3 mb-4">
+      <h2 class="display-6 fw-bold">24/7</h2>
+      <p class="text-muted">Monitoring and alerting support</p>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 border-top">
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title">Upload & Analyse</h5>
+          <p class="card-text">Securely ingest ledger files, categorize transactions, and let our risk engine surface anomalies instantly.</p>
+          <a href="{% url 'upload_ledger' %}" class="btn btn-outline-primary">Learn More</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title">Investigate & Collaborate</h5>
+          <p class="card-text">Assign findings to reviewers, track status changes, and maintain accountability from intake to resolution.</p>
+          <a href="{% url 'auditor_dashboard' %}" class="btn btn-outline-primary">See Auditor Tools</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title">Report & Share</h5>
+          <p class="card-text">Generate executive-ready summaries and detailed reports for auditors, finance leads, and compliance teams.</p>
+          <a href="{% url 'finance_dashboard' %}" class="btn btn-outline-primary">Explore Reporting</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

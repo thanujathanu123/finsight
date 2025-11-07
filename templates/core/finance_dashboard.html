@@ -1,0 +1,164 @@
+{% extends 'core/base.html' %}
+{% load metric_formatters %}
+
+{% block title %}Finance Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>Finance Operations</h2>
+        <p class="text-muted mb-0">Financial insights from {{ time_window_start|date:"M d" }} to {{ time_window_end|date:"M d, Y" }}</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{% url 'upload_ledger' %}" class="btn btn-primary">
+            <i class="bi bi-upload"></i> Upload New Ledger
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Transaction Overview Cards -->
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Total Volume</h6>
+                <h2 class="card-title">{{ stats.total_amount|format_metric:"currency" }}</h2>
+                <p class="card-text">Processed in finance window</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Transactions</h6>
+                <h2 class="card-title">{{ stats.transaction_count|format_metric }}</h2>
+                <p class="card-text">Across all ledgers</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Average Size</h6>
+                <h2 class="card-title">{{ stats.avg_transaction|format_metric:"currency" }}</h2>
+                <p class="card-text">Per transaction</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Average Risk</h6>
+                <h2 class="card-title">{{ stats.risk_score_avg|format_metric:"percentage" }}</h2>
+                <p class="card-text">Mean risk score</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Transactions -->
+    <div class="col-md-8">
+        <div class="dashboard-card card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Recent Transactions</h5>
+                <span class="badge bg-primary-subtle text-primary">Latest 10</span>
+            </div>
+            <div class="card-body">
+                {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle datatable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Risk Score</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                    <tr>
+                                        <td>{{ transaction.date|date:"M d, Y" }}</td>
+                                        <td>{{ transaction.description|truncatechars:60 }}</td>
+                                        <td>{{ transaction.amount|format_metric:"currency" }}</td>
+                                        <td>{{ transaction.risk_score|format_metric:"percentage" }}</td>
+                                        <td>
+                                            <span class="badge text-capitalize {% if transaction.status == 'approved' %}bg-success-subtle text-success{% elif transaction.status == 'flagged' %}bg-warning-subtle text-warning{% elif transaction.status == 'rejected' %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                                                {{ transaction.status|default:'pending' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No recent transactions recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Financial Signals -->
+    <div class="col-md-4">
+        <div class="dashboard-card card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Daily Trends</h5>
+            </div>
+            <div class="card-body">
+                {% if daily_trends %}
+                    <ul class="list-unstyled mb-0">
+                        {% for trend in daily_trends %}
+                            <li class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ trend.date|date:"M d" }}</strong>
+                                        <div class="text-muted small">{{ trend.count|format_metric }} transactions</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-semibold">{{ trend.total_amount|format_metric:"currency" }}</div>
+                                        <div class="text-muted small">Avg risk {{ trend.avg_risk|format_metric:"percentage" }}</div>
+                                    </div>
+                                </div>
+                                <div class="progress progress-thin mt-2">
+                                    <div class="progress-bar" style="width: {{ trend.progress_pct }}%"></div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">Trend data will appear once transactions are processed.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="dashboard-card card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Upload Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-3">
+                        <strong>Supported Formats</strong>
+                        <p class="text-muted mb-0">CSV, Excel (.xlsx, .xls)</p>
+                    </li>
+                    <li class="mb-3">
+                        <strong>Required Columns</strong>
+                        <p class="text-muted mb-0">date, description, amount</p>
+                    </li>
+                    <li class="mb-3">
+                        <strong>File Size Limit</strong>
+                        <p class="text-muted mb-0">Maximum 10MB per file</p>
+                    </li>
+                    <li class="mb-0">
+                        <strong>Date Format</strong>
+                        <p class="text-muted mb-0">YYYY-MM-DD</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

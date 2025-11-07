@@ -1,0 +1,184 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}User Administration{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">User Administration</h1>
+        <p class="text-muted mb-0">Activate, deactivate, and assign roles to FinSight users.</p>
+    </div>
+    <div class="text-end">
+        <a href="/admin/auth/user/" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-box-arrow-up-right"></i>
+            Django Admin
+        </a>
+        <a href="/admin/auth/user/add/" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i>
+            Create User
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted fw-semibold">Total Users</h6>
+                <div class="d-flex align-items-end">
+                    <span class="display-6 fw-bold">{{ total_users }}</span>
+                    <span class="ms-2 text-muted">accounts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted fw-semibold">Active</h6>
+                <div class="d-flex align-items-center">
+                    <span class="display-6 fw-bold text-success">{{ active_user_count }}</span>
+                    <span class="ms-2 text-muted">enabled</span>
+                </div>
+                <div class="progress mt-3" style="height: 6px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                        style="width: {{ active_percentage }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-uppercase text-muted fw-semibold">Inactive</h6>
+                <div class="d-flex align-items-center">
+                    <span class="display-6 fw-bold text-warning">{{ inactive_user_count }}</span>
+                    <span class="ms-2 text-muted">disabled</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-light">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h5 class="card-title mb-0">Role Distribution</h5>
+                <small class="text-muted">Group membership across the platform.</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if role_stats %}
+            <div class="row g-3">
+                {% for role in role_stats %}
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-primary-subtle text-primary">{{ role.name }}</span>
+                                </div>
+                                <span class="fw-semibold">{{ role.user_count }}</span>
+                            </div>
+                            <small class="text-muted d-block mt-2">members</small>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No roles configured yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="card-title mb-0">User Directory</h5>
+                <small class="text-muted">Manage activation and role assignments per user.</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">User</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Role</th>
+                        <th scope="col" class="text-center">Status</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in user_rows %}
+                        <tr class="{% if row.is_self %}table-secondary{% endif %}">
+                            <td>
+                                <div class="fw-semibold">{{ row.user.username }}</div>
+                                <small class="text-muted">Joined {{ row.user.date_joined|date:'M d, Y' }}</small>
+                            </td>
+                            <td>
+                                <small>{{ row.user.email|default:'—' }}</small>
+                            </td>
+                            <td>
+                                <form method="post" class="d-flex align-items-center gap-2">
+                                    {% csrf_token %}
+                                    {{ row.role_form.user_id }}
+                                    {{ row.role_form.form_type }}
+                                    {{ row.role_form.role }}
+                                    <button type="submit" class="btn btn-sm btn-outline-primary"
+                                        {% if row.is_self %}disabled title="You cannot change your own role."{% endif %}
+                                        {% if row.is_superuser and not user.is_superuser %}disabled title="Superuser role requires superuser privileges."{% endif %}>
+                                        Update
+                                    </button>
+                                </form>
+                            </td>
+                            <td class="text-center">
+                                {% if row.user.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <form method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    {{ row.activation_form.user_id }}
+                                    {{ row.activation_form.action }}
+                                    {{ row.activation_form.form_type }}
+                                    <button type="submit" class="btn btn-sm {% if row.user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+                                        {% if row.is_self %}disabled title="You cannot deactivate yourself."{% endif %}
+                                        {% if row.is_superuser and not user.is_superuser %}disabled title="Only superusers may deactivate another superuser."{% endif %}>
+                                        {% if row.user.is_active %}
+                                            <i class="bi bi-person-dash"></i>
+                                            Deactivate
+                                        {% else %}
+                                            <i class="bi bi-person-check"></i>
+                                            Activate
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                No users found.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-light text-muted">
+        <small>
+            Grey rows indicate your own account. To manage superusers or change multiple roles, use the Django admin interface.
+        </small>
+    </div>
+</div>
+{% endblock %}

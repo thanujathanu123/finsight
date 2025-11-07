@@ -1,0 +1,201 @@
+{% load static group_filters metric_formatters %}
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>FinSight - {% block title %}Dashboard{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'core/css/bootstrap.min.css' %}" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="{% static 'core/css/bootstrap-icons.css' %}" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="{% static 'core/js/chart.umd.min.js' %}"></script>
+    <!-- DataTables -->
+    <link href="{% static 'core/css/dataTables.bootstrap5.min.css' %}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+          <strong>FinSight</strong>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+          {% if user.is_authenticated %}
+            <ul class="navbar-nav me-auto">
+              {% if user.is_superuser or user|has_group:'Admin' %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'admin_dashboard' %}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/admin/">Admin Panel</a>
+                </li>
+              {% endif %}
+              
+              {% if user.is_superuser or user|has_group:'Auditor' or user|has_group:'Admin' %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'auditor_dashboard' %}">Risk Analysis</a>
+                </li>
+              {% endif %}
+              
+              {% if user.is_superuser or user|has_group:'FinanceOfficer' or user|has_group:'Auditor' or user|has_group:'Admin' %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'upload_ledger' %}">Upload</a>
+                </li>
+              {% endif %}
+              
+              {% if user.is_superuser or user|has_group:'Reviewer' or user|has_group:'Admin' %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'reviewer_dashboard' %}">Review</a>
+                </li>
+              {% endif %}
+            </ul>
+            
+            <ul class="navbar-nav">
+              <li class="nav-item me-2">
+                <button class="btn btn-link nav-link" id="themeSwitcher">
+                  <i class="bi bi-moon-fill theme-icon-dark d-none"></i>
+                  <i class="bi bi-sun-fill theme-icon-light d-none"></i>
+                  <span class="theme-text">Theme</span>
+                </button>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                  <i class="bi bi-person-circle"></i>
+                  {{ user.username }} ({% if user.is_authenticated %}{{ user.groups.first.name|default:'User' }}{% endif %})
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <span class="dropdown-item-text">
+                      <small class="text-muted">Signed in as</small><br>
+                      <strong>{{ user.username }}</strong>
+                    </span>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="dropdown-item">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                      </button>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          {% else %}
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item me-2">
+                <button class="btn btn-link nav-link" id="themeSwitcher">
+                  <i class="bi bi-moon-fill theme-icon-dark d-none"></i>
+                  <i class="bi bi-sun-fill theme-icon-light d-none"></i>
+                  <span class="theme-text">Theme</span>
+                </button>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">
+                  <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+              </li>
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <main class="container py-4">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+      
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer mt-auto py-3 bg-light">
+      <div class="container text-center">
+        <span class="text-muted">FinSight — The Offline Auditor's Risk Radar</span>
+      </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="{% static 'core/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- jQuery -->
+    <script src="{% static 'core/js/jquery.min.js' %}"></script>
+    <!-- DataTables -->
+    <script src="{% static 'core/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'core/js/dataTables.bootstrap5.min.js' %}"></script>
+    <!-- Custom JS -->
+    <script src="{% static 'core/js/dashboard.js' %}"></script>
+    <script>
+      // Theme initialization
+      document.addEventListener('DOMContentLoaded', function() {
+        // Get theme preference or default to system preference
+        const getPreferredTheme = () => {
+          const storedTheme = localStorage.getItem('theme')
+          if (storedTheme) {
+            return storedTheme
+          }
+          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+
+        // Set theme and update icons
+        const setTheme = (theme) => {
+          document.documentElement.setAttribute('data-bs-theme', theme)
+          localStorage.setItem('theme', theme)
+          
+          // Update icons visibility
+          document.querySelector('.theme-icon-dark').classList.toggle('d-none', theme === 'dark')
+          document.querySelector('.theme-icon-light').classList.toggle('d-none', theme === 'light')
+          
+          // Update charts if they exist
+          const charts = Object.values(Chart.instances)
+          charts.forEach(chart => {
+            if (theme === 'dark') {
+              chart.options.scales.x.grid.color = 'rgba(255, 255, 255, 0.1)'
+              chart.options.scales.y.grid.color = 'rgba(255, 255, 255, 0.1)'
+              chart.options.scales.x.ticks.color = 'rgba(255, 255, 255, 0.7)'
+              chart.options.scales.y.ticks.color = 'rgba(255, 255, 255, 0.7)'
+            } else {
+              chart.options.scales.x.grid.color = 'rgba(0, 0, 0, 0.1)'
+              chart.options.scales.y.grid.color = 'rgba(0, 0, 0, 0.1)'
+              chart.options.scales.x.ticks.color = 'rgba(0, 0, 0, 0.7)'
+              chart.options.scales.y.ticks.color = 'rgba(0, 0, 0, 0.7)'
+            }
+            chart.update()
+          })
+        }
+
+        // Initialize theme
+        setTheme(getPreferredTheme())
+
+        // Toggle theme button
+        const themeToggle = document.getElementById('themeSwitcher')
+        if (themeToggle) {
+          themeToggle.addEventListener('click', () => {
+            const theme = document.documentElement.getAttribute('data-bs-theme')
+            setTheme(theme === 'dark' ? 'light' : 'dark')
+          })
+        }
+
+        // Watch for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+          if (!localStorage.getItem('theme')) {
+            setTheme(e.matches ? 'dark' : 'light')
+          }
+        })
+      })
+    </script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

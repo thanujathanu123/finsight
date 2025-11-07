@@ -1,0 +1,40 @@
+{% extends "core/auth_base.html" %}
+
+{% block auth_title %}Register for FinSight{% endblock %}
+{% block auth_subtitle %}Create your account to get started{% endblock %}
+
+{% block auth_content %}
+<form method="post" novalidate>
+  {% csrf_token %}
+  
+  {% for field in form %}
+  <div class="mb-3">
+    <label for="{{ field.id_for_label }}" class="form-label">
+      {{ field.label }}
+      {% if field.field.required %}
+        <span class="text-danger">*</span>
+      {% endif %}
+    </label>
+    {{ field }}
+    {% if field.help_text %}
+      <div class="form-text">{{ field.help_text }}</div>
+    {% endif %}
+    {% if field.errors %}
+      {% for error in field.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+      {% endfor %}
+    {% endif %}
+  </div>
+  {% endfor %}
+  
+  <div class="d-grid gap-2 mt-4">
+    <button type="submit" class="btn btn-primary">Register</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block auth_links %}
+<div class="text-center mt-3">
+  <p class="mb-0">Already have an account? <a href="{% url 'login' %}" class="text-primary">Login here</a></p>
+</div>
+{% endblock %}

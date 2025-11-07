@@ -1,0 +1,161 @@
+{% extends 'core/base.html' %}
+{% load metric_formatters %}
+
+{% block title %}Review Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>Risk Review Portal</h2>
+        <p class="text-muted mb-0">Insights for {{ time_window_start|date:"M d" }} – {{ time_window_end|date:"M d, Y" }}</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <button class="btn btn-primary" onclick="window.print()">
+            <i class="bi bi-printer"></i> Print Report
+        </button>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Risk Overview Cards -->
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Risk Level</h6>
+                <div class="risk-score {{ stats.risk_score_class }}">{{ stats.risk_score|format_metric:"percentage" }}</div>
+                <p class="card-text text-center mt-2">Current Period</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Reviewed Items</h6>
+                <h2 class="card-title">{{ stats.reviewed|format_metric }}</h2>
+                <p class="card-text">Of {{ stats.assigned|format_metric }} assigned items</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Pending Review</h6>
+                <h2 class="card-title text-warning">{{ stats.pending_review|format_metric }}</h2>
+                <p class="card-text">High priority items</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Average Resolution</h6>
+                <h2 class="card-title">{{ stats.avg_resolution_time|default:"—" }}</h2>
+                <p class="card-text">Time to close alerts</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Risk Analysis -->
+    <div class="col-md-8">
+        <div class="dashboard-card card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">High Risk Transactions</h5>
+            </div>
+            <div class="card-body">
+                {% if high_risk_alerts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle datatable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Risk Score</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in high_risk_alerts %}
+                                    <tr>
+                                        <td>{{ alert.transaction.date|date:"M d, Y" }}</td>
+                                        <td>{{ alert.transaction.description|truncatechars:60 }}</td>
+                                        <td>{{ alert.transaction.amount|format_metric:"currency" }}</td>
+                                        <td>
+                                            <span class="badge bg-danger-subtle text-danger">
+                                                {{ alert.transaction.risk_score|format_metric:"percentage" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge text-capitalize {% if alert.status == 'resolved' %}bg-success-subtle text-success{% elif alert.status == 'in_progress' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                                                {{ alert.status|default:'new' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No high risk transactions assigned.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Review Notes & Stats -->
+    <div class="col-md-4">
+        <!-- Review Progress -->
+        <div class="dashboard-card card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Review Progress</h5>
+            </div>
+            <div class="card-body">
+                {% if status_breakdown %}
+                    <ul class="list-unstyled mb-0">
+                        {% for status_item in status_breakdown %}
+                            <li class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>{{ status_item.label }}</div>
+                                    <div class="fw-semibold">{{ status_item.count|format_metric }}</div>
+                                </div>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar" style="width: {{ status_item.percentage }}%"></div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No alerts assigned during this period.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Review Notes -->
+        <div class="dashboard-card card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Notes</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_notes %}
+                    <div class="list-group list-group-flush">
+                        {% for note in recent_notes %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ note.title }}</h6>
+                                    <small class="text-muted">{{ note.created_at|timesince }} ago</small>
+                                </div>
+                                <p class="mb-1">{{ note.body|truncatechars:120 }}</p>
+                                <small class="text-muted">By: {{ note.author_name|default:'—' }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No review notes captured yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

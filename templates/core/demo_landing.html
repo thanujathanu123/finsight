@@ -1,0 +1,82 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Interactive Demo{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+  <h1 class="display-5 fw-bold">Experience the FinSight Interface</h1>
+  <p class="lead text-muted">This demo showcases the navigation and visual design built on the FinSight base layout.</p>
+  <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back to Landing Page</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-transparent">
+        <h5 class="mb-0">Navigation Preview</h5>
+      </div>
+      <div class="card-body">
+        <p>Use the top navigation to explore how different user roles reach their dashboards. In production environments, menu entries adjust automatically based on group membership.</p>
+        <ul class="list-group list-group-flush text-start">
+          <li class="list-group-item">
+            <strong>Admin Dashboard</strong> &mdash; Full system overview, user management, and risk profile controls.
+          </li>
+          <li class="list-group-item">
+            <strong>Risk Analysis</strong> &mdash; Auditor workspace with anomaly charts and case queues.
+          </li>
+          <li class="list-group-item">
+            <strong>Upload</strong> &mdash; Finance officers can import ledgers and trigger scoring pipelines.
+          </li>
+          <li class="list-group-item">
+            <strong>Review</strong> &mdash; Reviewer queue for triaging alerts and closing cases.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-transparent">
+        <h5 class="mb-0">Base Layout Features</h5>
+      </div>
+      <div class="card-body">
+        <div class="row text-start">
+          <div class="col-md-6 mb-3">
+            <h6 class="text-uppercase text-muted">Responsive Design</h6>
+            <p>Bootstrap-powered grid, navigation drawer, and cards adapt seamlessly to desktop and tablet form factors.</p>
+          </div>
+          <div class="col-md-6 mb-3">
+            <h6 class="text-uppercase text-muted">Theme Switcher</h6>
+            <p>Toggle between light and dark modes using the theme control in the navigation bar&mdash;preferences persist per browser.</p>
+          </div>
+          <div class="col-md-6 mb-3">
+            <h6 class="text-uppercase text-muted">Live Charts</h6>
+            <p>Chart.js powers interactive dashboards with colors that automatically adapt to the active theme.</p>
+          </div>
+          <div class="col-md-6 mb-3">
+            <h6 class="text-uppercase text-muted">Alert Messaging</h6>
+            <p>Global message banners surface success, warning, and error notifications across the app.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Try the Full Demo</h5>
+        <p class="card-text">Sign in with a demo account to view live risk analytics, process sample ledgers, and assign investigation tasks.</p>
+        <a href="{% url 'guest_dashboard' %}" class="btn btn-primary w-100">Open Guest Demo</a>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title">Need a Guided Tour?</h5>
+        <p class="card-text">Our team can walk you through role-tailored workflows and help configure FinSight for your compliance needs.</p>
+        <a href="mailto:hello@finsight.example" class="btn btn-outline-primary w-100">Book a Session</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

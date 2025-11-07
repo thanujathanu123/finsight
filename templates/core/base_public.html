@@ -1,0 +1,104 @@
+{% load static %}
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>FinSight - {% block title %}{% endblock %}</title>
+    <link href="{% static 'core/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'core/css/bootstrap-icons.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}"><strong>FinSight</strong></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="publicNav">
+          <ul class="navbar-nav ms-auto align-items-lg-center">
+            <li class="nav-item me-lg-3">
+              <button class="btn btn-link nav-link" id="themeSwitcher">
+                <i class="bi bi-moon-fill theme-icon-dark d-none"></i>
+                <i class="bi bi-sun-fill theme-icon-light d-none"></i>
+                <span class="theme-text">Theme</span>
+              </button>
+            </li>
+            <li class="nav-item me-lg-2">
+              <a class="nav-link" href="{% url 'demo' %}">Live Demo</a>
+            </li>
+            <li class="nav-item me-lg-2">
+              <a class="nav-link" href="{% url 'login' %}">Sign In</a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-outline-light" href="{% url 'register' %}">Request Access</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container py-5">
+      {% if messages %}
+        <div class="row">
+          <div class="col-12">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="py-4 bg-light border-top mt-auto">
+      <div class="container text-center">
+        <span class="text-muted">FinSight — Financial Risk Intelligence for the Public Sector</span>
+      </div>
+    </footer>
+
+    <script src="{% static 'core/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'core/js/chart.umd.min.js' %}"></script>
+    <script src="{% static 'core/js/dashboard.js' %}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const getPreferredTheme = () => {
+          const storedTheme = localStorage.getItem('theme');
+          if (storedTheme) {
+            return storedTheme;
+          }
+          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        };
+
+        const setTheme = (theme) => {
+          document.documentElement.setAttribute('data-bs-theme', theme);
+          localStorage.setItem('theme', theme);
+          document.querySelector('.theme-icon-dark').classList.toggle('d-none', theme === 'dark');
+          document.querySelector('.theme-icon-light').classList.toggle('d-none', theme === 'light');
+        };
+
+        setTheme(getPreferredTheme());
+
+        const themeToggle = document.getElementById('themeSwitcher');
+        if (themeToggle) {
+          themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-bs-theme');
+            setTheme(current === 'dark' ? 'light' : 'dark');
+          });
+        }
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+          if (!localStorage.getItem('theme')) {
+            setTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+      });
+    </script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

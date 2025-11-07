@@ -1,0 +1,246 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>System Administration</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="/admin/auth/user/add/" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Add User
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- System Overview Cards -->
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Total Users</h6>
+                <h2 class="card-title">{{ stats.total_users }}</h2>
+                <p class="card-text">
+                    <span class="badge bg-success">{{ stats.active_users }} Active</span>
+                    <span class="badge bg-secondary">{{ stats.inactive_users }} Inactive</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Ledger Files</h6>
+                <h2 class="card-title">{{ stats.total_ledgers }}</h2>
+                <p class="card-text">{{ stats.storage_used|floatformat:2 }} MB Storage Used</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Risk Profiles</h6>
+                <h2 class="card-title">{{ stats.risk_profiles }}</h2>
+                <p class="card-text">Configured analytics templates</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">High-Risk Transactions</h6>
+                <h2 class="card-title">{{ stats.high_risk_transactions }}</h2>
+                <p class="card-text">{{ stats.high_risk_percentage }}% of {{ stats.total_transactions }} total</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- User Management -->
+    <div class="col-md-8">
+        <div class="dashboard-card card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">User Management</h5>
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'admin_user_management' %}">
+                    <i class="bi bi-people"></i>
+                    Manage Users
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                    <ul class="list-group list-group-flush">
+                        {% for recent_user in recent_users %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>{{ recent_user.username }}</strong>
+                                        <small class="text-muted d-block">Last login {{ recent_user.last_login|timesince }} ago</small>
+                                    </div>
+                                    {% with recent_user.groups.first as group %}
+                                        <span class="badge bg-primary-subtle text-primary">
+                                            {{ group.name|default:'No Role Assigned' }}
+                                        </span>
+                                    {% endwith %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No recent user activity.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Metrics & Activity -->
+    <div class="col-md-4">
+        <!-- Recent Activity -->
+        <div class="dashboard-card card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">System Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_activity %}
+                    <div class="list-group list-group-flush">
+                        {% for entry in recent_activity %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ entry.get_action_display }}</h6>
+                                    <small class="text-muted">{{ entry.timestamp|timesince }} ago</small>
+                                </div>
+                                <p class="mb-1">{{ entry.object_repr }}</p>
+                                <small class="text-muted">By {{ entry.user|default:'System' }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No recent logged activity.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Ledger Pipeline -->
+        <div class="dashboard-card card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Ledger Pipeline</h5>
+            </div>
+            <div class="card-body">
+                {% if ledger_status_counts %}
+                    <ul class="list-unstyled mb-0">
+                        {% for status in ledger_status_counts %}
+                            <li class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>{{ status.label }}</div>
+                                    <div class="fw-semibold">{{ status.count }}</div>
+                                </div>
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar" style="width: {{ status.percentage }}%"></div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No ledger uploads yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-6">
+        <div class="dashboard-card card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Uploads</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_uploads %}
+                    <ul class="list-group list-group-flush">
+                        {% for upload in recent_uploads %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>{{ upload.filename }}</strong>
+                                        <small class="text-muted d-block">Uploaded {{ upload.uploaded_at|timesince }} ago by {{ upload.uploaded_by|default:'—' }}</small>
+                                    </div>
+                                    <span class="badge bg-info-subtle text-info text-capitalize">{{ upload.status }}</span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No recent uploads.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="dashboard-card card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Alerts</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_alerts %}
+                    <ul class="list-group list-group-flush">
+                        {% for alert in recent_alerts %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>{{ alert.title }}</strong>
+                                        <small class="text-muted d-block">{{ alert.severity|capfirst }} • {{ alert.created_at|timesince }} ago</small>
+                                    </div>
+                                    <span class="badge bg-warning-subtle text-warning text-capitalize">{{ alert.status }}</span>
+                                </div>
+                                <small class="text-muted">Transaction: {{ alert.transaction.reference_id }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No recent alerts.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-12">
+        <div class="dashboard-card card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Risk Profiles Performance</h5>
+            </div>
+            <div class="card-body">
+                {% if risk_profiles %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Profile</th>
+                                    <th scope="col">Usage</th>
+                                    <th scope="col">Average Risk Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for profile in risk_profiles %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ profile.name }}</strong>
+                                            <small class="text-muted d-block">Industry: {{ profile.industry }}</small>
+                                        </td>
+                                        <td>{{ profile.usage_count }}</td>
+                                        <td>{% if profile.avg_risk_score %}{{ profile.avg_risk_score|floatformat:2 }}{% else %}—{% endif %}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No risk profiles available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

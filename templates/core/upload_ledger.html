@@ -1,0 +1,74 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="upload-container">
+    <div class="dashboard-header">
+        <h2>Upload Ledger</h2>
+        <div class="stats-summary">
+            <div class="stat-card">
+                <span class="stat-label">Total Uploads</span>
+                <span class="stat-value">{{ upload_count }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">High Risk Transactions</span>
+                <span class="stat-value">{{ high_risk_count }}</span>
+            </div>
+        </div>
+    </div>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="upload-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Upload File</button>
+    </form>
+
+    {% if recent_uploads %}
+    <div class="recent-uploads">
+        <h3>Recent Uploads</h3>
+        <ul>
+            {% for upload in recent_uploads %}
+            <li class="upload-item">
+                <div class="upload-main">
+                    <strong>{{ upload.filename }}</strong>
+                    <span class="upload-meta">
+                        {{ upload.uploaded_at|date:"Y-m-d H:i" }}
+                        <span class="status-badge status-{{ upload.status }}">
+                            {{ upload.status|title }}
+                        </span>
+                    </span>
+                </div>
+                <div class="upload-details">
+                    {% if upload.risk_score %}
+                    <div class="risk-info">
+                        <span class="label">Risk Score:</span>
+                        <strong>{{ upload.risk_score|floatformat:2 }}</strong>
+                    </div>
+                    {% endif %}
+                    <div class="stats-info">
+                        <span class="label">Alerts:</span>
+                        <strong>{{ upload.alert_count }}</strong>
+                        <span class="label ml-3">High Risk:</span>
+                        <strong>{{ upload.calculated_high_risk_count }}</strong>
+                    </div>
+                    {% if upload.error_message %}
+                    <div class="error-message">
+                        {{ upload.error_message }}
+                    </div>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

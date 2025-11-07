@@ -1,0 +1,182 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Guest Demo{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h4 class="alert-heading">Welcome to FinSight Demo!</h4>
+            <p>This is a demonstration view showing sample financial risk detection capabilities. For full access, please contact your system administrator.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Demo Stats Cards -->
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Sample Risk Score</h6>
+                <div class="risk-score risk-medium">65</div>
+                <p class="card-text text-center mt-2">Demo Data</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Transactions</h6>
+                <h2 class="card-title">1,234</h2>
+                <p class="card-text">Sample dataset</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Top Vendor</h6>
+                <h2 class="card-title">Example Co</h2>
+                <p class="card-text">15 transactions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-card card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Analysis Period</h6>
+                <h2 class="card-title">Q4</h2>
+                <p class="card-text">2024</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Sample Chart -->
+    <div class="col-md-8">
+        <div class="chart-container">
+            <canvas id="demoRiskChart"></canvas>
+        </div>
+        
+        <!-- Sample Transactions -->
+        <div class="dashboard-card card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Sample Transactions</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Risk Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2024-12-15</td>
+                                <td>Example Co Payment</td>
+                                <td>$3,500.00</td>
+                                <td><span class="badge bg-warning">Medium</span></td>
+                            </tr>
+                            <tr>
+                                <td>2024-12-14</td>
+                                <td>Office Supplies</td>
+                                <td>$250.00</td>
+                                <td><span class="badge bg-success">Low</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Features Preview -->
+    <div class="col-md-4">
+        <div class="dashboard-card card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Available Features</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Risk Detection</h6>
+                            <span class="badge bg-primary">Pro</span>
+                        </div>
+                        <p class="mb-1">Automated risk scoring and analysis</p>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Report Generation</h6>
+                            <span class="badge bg-primary">Pro</span>
+                        </div>
+                        <p class="mb-1">Detailed PDF reports and analytics</p>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Multi-User Access</h6>
+                            <span class="badge bg-primary">Pro</span>
+                        </div>
+                        <p class="mb-1">Role-based access control</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'login' %}" class="btn btn-primary">Log In for Full Access</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Demo risk distribution chart
+    new Chart(document.getElementById('demoRiskChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+            datasets: [{
+                label: 'Sample Risk Distribution',
+                data: [45, 35, 20],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.5)',
+                    'rgba(255, 193, 7, 0.5)',
+                    'rgba(220, 53, 69, 0.5)'
+                ],
+                borderColor: [
+                    'rgb(40, 167, 69)',
+                    'rgb(255, 193, 7)',
+                    'rgb(220, 53, 69)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Transactions'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Sample Risk Distribution (Demo Data)'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
