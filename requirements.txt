@@ -11,3 +11,4 @@ djangorestframework>=3.14
 channels>=4.0
 channels-redis>=4.1
 gunicorn
+django-celery-results
